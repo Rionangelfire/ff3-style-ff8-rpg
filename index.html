@@ -1,0 +1,1286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<link rel="icon" href="data:," />
+<title>FF3 Style FF8 RPG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ink:#f4f6ff; --dim:#b9c2e8; --bg:#07071a; --panel:#0d1030;
+  --win1:#000078; --win2:#000040; --accent:#ffd94a; --accent2:#7ee0ff;
+  --good:#7dff8a; --bad:#ff7d7d; --line:#e8ecff;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(900px 480px at 50% -10%, #1b2260 0%, transparent 60%),
+    repeating-linear-gradient(0deg,#07071a 0 3px,#080826 3px 6px);
+  color:var(--ink); font-family:"VT323",ui-monospace,monospace; font-size:20px; line-height:1.35;
+  min-height:100vh;
+}
+.wrap{max-width:1060px;margin:0 auto;padding:14px 12px 40px;}
+h1.game-title{
+  font-family:"Press Start 2P",monospace; font-size:clamp(15px,3.4vw,24px); line-height:1.5;
+  margin:6px 0 2px; color:#fff; text-shadow:3px 3px 0 #2b3cff, 6px 6px 0 rgba(0,0,0,.45);
+  letter-spacing:.5px;
+}
+.subtitle{color:var(--dim); font-size:19px; margin:0 0 12px;}
+.subtitle b{color:var(--accent); font-weight:400;}
+.topbar{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin-bottom:10px;}
+.stat-chip{
+  background:linear-gradient(180deg,var(--win1),var(--win2));
+  border:3px solid var(--line); border-radius:8px; box-shadow:inset 0 0 0 2px #20206a, 0 3px 0 rgba(0,0,0,.5);
+  padding:5px 12px 3px; font-size:19px; display:flex; gap:8px; align-items:baseline;
+}
+.stat-chip .k{color:var(--accent2); font-size:15px; letter-spacing:1px;}
+.stat-chip .v{color:#fff;}
+.topbar .spacer{flex:1;}
+button{
+  font-family:"VT323",monospace; font-size:19px; color:var(--ink); cursor:pointer;
+  background:linear-gradient(180deg,#2a2f7a,#171a4d); border:3px solid var(--line); border-radius:8px;
+  padding:5px 14px 3px; box-shadow:0 3px 0 rgba(0,0,0,.5);
+}
+button:hover{border-color:var(--accent); color:#fff;}
+button:active{transform:translateY(2px); box-shadow:none;}
+button:disabled{opacity:.45; cursor:default; transform:none;}
+.layout{display:grid; grid-template-columns:1fr 300px; gap:12px; align-items:start;}
+@media (max-width:880px){ .layout{grid-template-columns:1fr;} }
+.stage{
+  background:#000; border:3px solid var(--line); border-radius:10px; overflow:hidden;
+  box-shadow:0 6px 0 rgba(0,0,0,.5), inset 0 0 0 2px #20206a; position:relative;
+}
+canvas#game{display:block; width:100%; height:auto; image-rendering:pixelated; image-rendering:crisp-edges; background:#000;}
+.win{
+  background:linear-gradient(180deg,var(--win1),var(--win2));
+  border:3px solid var(--line); border-radius:8px;
+  box-shadow:inset 0 0 0 2px #20206a, 0 3px 0 rgba(0,0,0,.5);
+  padding:12px 14px;
+}
+.win h2{font-family:"Press Start 2P",monospace; font-size:12px; margin:0 0 10px; color:var(--accent); letter-spacing:.5px; line-height:1.6;}
+#dialogueBox{min-height:118px; margin-top:12px; position:relative; cursor:pointer;}
+#dlgName{color:var(--accent); font-size:19px; letter-spacing:1px; min-height:22px;}
+#dlgText{font-size:23px; color:#fff; white-space:pre-wrap; min-height:52px;}
+#dlgHint{position:absolute; right:12px; bottom:6px; color:var(--accent2); font-size:16px; animation:bob 0.8s infinite alternate;}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(3px)}}
+#dlgChoices{display:none; margin-top:8px; display:none; flex-direction:column; gap:6px;}
+#dlgChoices button{text-align:left;}
+.party-card{margin-bottom:10px; padding-bottom:10px; border-bottom:2px dashed rgba(232,236,255,.35);}
+.party-card:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
+.party-head{display:flex; justify-content:space-between; align-items:baseline;}
+.party-name{color:#fff; font-size:22px;}
+.party-job{color:var(--accent2); font-size:16px;}
+.bar{height:10px; background:#101038; border:2px solid #565e9e; border-radius:4px; margin:4px 0 2px; overflow:hidden;}
+.bar > i{display:block; height:100%; background:linear-gradient(90deg,#3ddc5a,#a6ff7d);}
+.bar.low > i{background:linear-gradient(90deg,#ff5252,#ffb04a);}
+.hp-line{display:flex; justify-content:space-between; color:var(--dim); font-size:17px;}
+.kv{display:flex; justify-content:space-between; font-size:18px; color:var(--dim); padding:1px 0;}
+.kv b{color:#fff; font-weight:400;}
+.stock-grid{display:grid; grid-template-columns:1fr 1fr; gap:2px 14px;}
+.touch-controls{display:none; margin-top:12px; gap:12px; justify-content:space-between; align-items:center;}
+@media (pointer:coarse){ .touch-controls{display:flex;} }
+.dpad{display:grid; grid-template-columns:repeat(3,52px); grid-template-rows:repeat(3,52px); gap:4px;}
+.dpad button{padding:0; font-size:22px; line-height:1;}
+.dpad .blank{visibility:hidden;}
+.ab-btns{display:flex; gap:10px; align-items:center;}
+.ab-btns button{width:64px; height:64px; border-radius:50%; font-family:"Press Start 2P",monospace; font-size:13px;}
+.keys-help{color:var(--dim); font-size:17px; margin-top:10px;}
+.keys-help b{color:var(--accent2); font-weight:400;}
+.overlay{
+  position:fixed; inset:0; background:rgba(3,3,18,.78); display:none; align-items:center; justify-content:center;
+  padding:14px; z-index:40;
+}
+.overlay.open{display:flex;}
+.sheet{
+  width:min(620px,100%); max-height:88vh; overflow:auto;
+  background:linear-gradient(180deg,var(--win1),var(--win2));
+  border:3px solid var(--line); border-radius:10px; box-shadow:inset 0 0 0 2px #20206a, 0 10px 30px rgba(0,0,0,.6);
+  padding:18px;
+}
+.sheet h2{font-family:"Press Start 2P",monospace; font-size:13px; color:var(--accent); margin:0 0 12px; line-height:1.7;}
+.sheet p{font-size:20px; color:#eef;}
+.shop-row,.menu-row{
+  display:flex; justify-content:space-between; gap:10px; align-items:center;
+  padding:7px 8px; border:2px solid transparent; border-radius:6px; width:100%;
+  background:transparent; box-shadow:none; text-align:left; font-size:21px;
+}
+.shop-row:hover,.menu-row:hover{border-color:var(--accent); background:rgba(255,255,255,.06);}
+.shop-row .price{color:var(--accent);}
+.shop-row small{display:block; color:var(--dim); font-size:16px;}
+.close-row{margin-top:14px; text-align:right;}
+.log-line{font-size:19px; color:var(--dim); border-bottom:1px dashed rgba(232,236,255,.25); padding:4px 0;}
+.log-line b{color:#fff; font-weight:400;}
+.banner{
+  display:none; margin-top:12px; text-align:center; padding:14px;
+}
+.banner .big{font-family:"Press Start 2P",monospace; font-size:16px; color:var(--accent); line-height:1.8;}
+.foot{color:#6d76ad; font-size:16px; margin-top:16px; text-align:center;}
+@media (prefers-reduced-motion: reduce){ #dlgHint{animation:none;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="game-title">FINAL FANTASY VIII</h1>
+  <p class="subtitle">— in the style of FF III (NES) · <b>The SeeD Exam</b> · a tiny fan-made tribute RPG —</p>
+
+  <div class="topbar">
+    <div class="stat-chip"><span class="k">PLACE</span><span class="v" id="hudPlace">Balamb Garden — Classroom</span></div>
+    <div class="stat-chip"><span class="k">GIL</span><span class="v" id="hudGil">0</span></div>
+    <div class="stat-chip"><span class="k">QUEST</span><span class="v" id="hudQuest">Talk to Instructor Quistis</span></div>
+    <div class="spacer"></div>
+    <button id="btnMenu" type="button">☰ MENU</button>
+    <button id="btnSound" type="button">♪ SOUND: ON</button>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="stage"><canvas id="game" width="480" height="352"></canvas></div>
+
+      <div class="win" id="dialogueBox" role="button" aria-label="Advance dialogue">
+        <div id="dlgName"></div>
+        <div id="dlgText">Loading…</div>
+        <div id="dlgChoices"></div>
+        <div id="dlgHint">▼ A / TAP</div>
+      </div>
+
+      <div class="win banner" id="bannerBox">
+        <div class="big" id="bannerTitle"></div>
+        <div id="bannerText" style="font-size:21px;"></div>
+        <div style="margin-top:10px;"><button id="btnBanner" type="button">CONTINUE</button></div>
+      </div>
+
+      <div class="touch-controls" aria-label="Touch controls">
+        <div class="dpad">
+          <span class="blank"></span><button type="button" data-dir="up" aria-label="Up">▲</button><span class="blank"></span>
+          <button type="button" data-dir="left" aria-label="Left">◀</button><span class="blank"></span><button type="button" data-dir="right" aria-label="Right">▶</button>
+          <span class="blank"></span><button type="button" data-dir="down" aria-label="Down">▼</button><span class="blank"></span>
+        </div>
+        <div class="ab-btns">
+          <button type="button" id="btnB">B</button>
+          <button type="button" id="btnA">A</button>
+        </div>
+      </div>
+      <p class="keys-help"><b>Move:</b> Arrow keys / WASD / D-pad &nbsp;·&nbsp; <b>A — Talk / Confirm:</b> Enter or Z &nbsp;·&nbsp; <b>B — Menu / Cancel:</b> Esc or X &nbsp;·&nbsp; Walk into people and objects to inspect them, step on glowing doors to travel.</p>
+    </div>
+
+    <div>
+      <div class="win" id="partyPanel">
+        <h2>PARTY</h2>
+        <div id="partyList"></div>
+      </div>
+      <div class="win" style="margin-top:12px;">
+        <h2>MAGIC STOCK · DRAWN SPELLS</h2>
+        <div class="stock-grid" id="stockList"></div>
+        <h2 style="margin-top:14px;">GUARDIAN FORCES</h2>
+        <div id="gfList"></div>
+        <h2 style="margin-top:14px;">BAG</h2>
+        <div id="bagList"></div>
+      </div>
+      <div class="win" style="margin-top:12px;">
+        <h2>FIELD LOG</h2>
+        <div id="fieldLog"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">Fan-made tribute for fun — not affiliated with Square Enix. Progress lives in this tab only; closing it starts the exam over.</p>
+</div>
+
+<!-- MENU OVERLAY -->
+<div class="overlay" id="menuOverlay">
+  <div class="sheet">
+    <h2>MENU</h2>
+    <div id="menuBody"></div>
+    <div class="close-row"><button type="button" data-close="menuOverlay">CLOSE</button></div>
+  </div>
+</div>
+
+<!-- SHOP OVERLAY -->
+<div class="overlay" id="shopOverlay">
+  <div class="sheet">
+    <h2 id="shopTitle">SHOP</h2>
+    <p id="shopIntro" style="margin-top:0;"></p>
+    <div id="shopBody"></div>
+    <div class="kv" style="margin-top:10px;"><span>Your gil</span><b id="shopGil">0</b></div>
+    <div class="close-row"><button type="button" data-close="shopOverlay">LEAVE SHOP</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   FINAL FANTASY VIII — FF III style · "The SeeD Exam"
+   A tiny top-down RPG: explore, talk, draw magic, summon GFs,
+   pass the Fire Cavern exam, then stop the Black Widow.
+   ============================================================ */
+
+/* ---------- tiny audio: square-wave blips ---------- */
+var AudioSys = {
+  ctx:null, on:true,
+  ensure:function(){
+    if(!this.ctx){ try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+    if(this.ctx && this.ctx.state==="suspended"){ this.ctx.resume(); }
+  },
+  beep:function(freq,dur,type,vol,when){
+    if(!this.on) return; this.ensure(); if(!this.ctx) return;
+    var t=this.ctx.currentTime+(when||0);
+    var o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type||"square"; o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(vol||0.05,t); g.gain.exponentialRampToValueAtTime(0.001,t+(dur||0.09));
+    o.connect(g); g.connect(this.ctx.destination); o.start(t); o.stop(t+(dur||0.09)+0.02);
+  },
+  cursor:function(){ this.beep(880,0.05,"square",0.03); },
+  accept:function(){ this.beep(660,0.06,"square",0.04); this.beep(990,0.09,"square",0.04,0.06); },
+  cancel:function(){ this.beep(330,0.08,"square",0.04); },
+  hit:function(){ this.beep(160,0.1,"sawtooth",0.07); this.beep(90,0.12,"sawtooth",0.06,0.03); },
+  magic:function(){ var n=[523,659,784,1046]; for(var i=0;i<4;i++) this.beep(n[i],0.1,"triangle",0.06,i*0.07); },
+  gf:function(){ var n=[196,262,330,392,523,659]; for(var i=0;i<6;i++) this.beep(n[i],0.16,"sawtooth",0.05,i*0.09); },
+  heal:function(){ var n=[784,988,1175]; for(var i=0;i<3;i++) this.beep(n[i],0.1,"triangle",0.05,i*0.07); },
+  victory:function(){ var n=[523,523,523,659,784,659,784]; for(var i=0;i<7;i++) this.beep(n[i],0.13,"square",0.05,i*0.11); },
+  defeat:function(){ var n=[392,330,262,196]; for(var i=0;i<4;i++) this.beep(n[i],0.2,"triangle",0.06,i*0.16); }
+};
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function rnd(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ---------- game state ---------- */
+var TILE=32, MW=15, MH=11;
+var G = {
+  mode:"explore", /* explore | dialog | battle | overlay */
+  map:"garden", px:7, py:8, dir:"up",
+  gil:1200, steps:0, battlesWon:0, fled:0, score:100,
+  flags:{ intro:false, metTeam:false, gotGF:false, cavePermit:false, ifrit:false, widow:false, ended:false, terminal:false, fountain:false },
+  stock:{ Fire:6, Thunder:4, Cure:5, Fira:0 },
+  items:{ Potion:3, "Hi-Potion":0, "Phoenix Down":1, Antidote:1 },
+  gear:{ weapon:0, armor:0 },
+  log:[]
+};
+var WEAPONS=[{name:"Revolver · Chain Whip · Nunchaku",atk:0,cost:0},{name:"Metal Knuckle Set (+8 ATK)",atk:8,cost:600},{name:"Punisher Set (+16 ATK)",atk:16,cost:1400},{name:"Lion Heart Set (+26 ATK)",atk:26,cost:2600}];
+var ARMORS=[{name:"SeeD Uniform",def:0,cost:0},{name:"Leather Guard (+6 DEF)",def:6,cost:500},{name:"Mythril Vest (+13 DEF)",def:13,cost:1200},{name:"Diamond Mail (+22 DEF)",def:22,cost:2400}];
+
+function mkMember(name,job,hp,atk,def,spd,mag,pal,weapon){
+  return { name:name, job:job, level:5, xp:0, hp:hp, maxhp:hp, atk:atk, def:def, spd:spd, mag:mag, pal:pal, weapon:weapon, alive:true, defending:false };
+}
+var party=[
+  mkMember("Squall","Gunblade Specialist",512,30,13,14,16,{hair:"#3a2a1c",suit:"#26355e",trim:"#c8ccd8"},"Revolver"),
+  mkMember("Zell","Martial Artist",486,28,12,17,12,{hair:"#e8c33a",suit:"#7a2020",trim:"#ffd94a"},"Metal Knuckle"),
+  mkMember("Selphie","Energetic Fighter",448,24,10,19,20,{hair:"#7a4a22",suit:"#2e6e46",trim:"#ffe9a8"},"Crescent Wish")
+];
+function partyAtk(m){ return m.atk + WEAPONS[G.gear.weapon].atk; }
+function partyDef(m){ return m.def + ARMORS[G.gear.armor].def; }
+function aliveParty(){ return party.filter(function(m){ return m.alive; }); }
+
+function logEvent(txt){
+  G.log.unshift(txt); if(G.log.length>6) G.log.pop();
+  $("fieldLog").innerHTML = G.log.map(function(l){ return '<div class="log-line">'+l+"</div>"; }).join("") || '<div class="log-line">Your story begins.</div>';
+}
+
+/* ---------- maps ---------- */
+/* Legend garden: # wall . floor D desk B board T terminal P plant E exit S save-crystal glow */
+var MAPS={
+garden:{ name:"Balamb Garden — Classroom", bg:"#232a52",
+  rows:[
+  "###############",
+  "#.....B.......#",
+  "#.DD....DD....#",
+  "#.DD....DD..P.#",
+  "#.............#",
+  "#.T.......P...#",
+  "#.............#",
+  "#..P......DD..#",
+  "#.........DD..#",
+  "#......S......#",
+  "######EEE######"],
+  solid:"#DBTPS", exits:{E:{to:"field",x:7,y:9}},
+  npcs:[
+    {id:"quistis",x:7,y:1,name:"Quistis",pal:{hair:"#e8c96a",suit:"#7a2438",trim:"#f4d8e0"}},
+    {id:"student1",x:3,y:4,name:"Student",pal:{hair:"#222",suit:"#26355e",trim:"#c8ccd8"}},
+    {id:"student2",x:11,y:4,name:"Student",pal:{hair:"#5a3a1a",suit:"#26355e",trim:"#c8ccd8"}}
+  ],
+  spots:[{x:2,y:5,id:"terminal"},{x:7,y:9,id:"crystal"}]
+},
+field:{ name:"Balamb Plains", bg:"#2c6e35",
+  rows:[
+  "TTTTTTTTTTTTTTT",
+  "T,,,,,,,,,,,,,T",
+  "T,,**,,,,,,**,T",
+  "T,,,,,,,,,,,,,T",
+  "W=============V",
+  "T,,,,,,,,,,,,,T",
+  "T,,,~~,,,,,,,,T",
+  "T,,,~~,,,,**,,T",
+  "T,,,,,,,,,,,,,T",
+  "T,,**,,,,,,,,,T",
+  "TTTTTTGGTTTTTTT"],
+  solid:"T~", exits:{W:{to:"town",x:13,y:5}, V:{to:"cavern",x:6,y:9}, G:{to:"garden",x:7,y:8}},
+  npcs:[ {id:"signpost",x:8,y:3,name:"Signpost",sign:true} ],
+  spots:[], encounter:{tiles:",", rate:0.16, table:["bitebug","bitebug","cater","grendel"]}
+},
+town:{ name:"Balamb Town", bg:"#3a5a8c",
+  rows:[
+  "###############",
+  "#SS##.....##II#",
+  "#SS##..F..##II#",
+  "#......F......#",
+  "#.............#",
+  "#..P.......P..#",
+  "#.............#",
+  "#.............#",
+  "#......S......#",
+  "#.............#",
+  "#######E#######"],
+  solid:"#SIFP", exits:{E:{to:"field",x:1,y:5}},
+  npcs:[
+    {id:"shopkeep",x:2,y:3,name:"Shopkeeper",pal:{hair:"#888",suit:"#6e4a1e",trim:"#ffd94a"}},
+    {id:"innkeep",x:12,y:3,name:"Innkeeper",pal:{hair:"#a33",suit:"#274a6e",trim:"#fff"}},
+    {id:"kid",x:5,y:6,name:"Kid",pal:{hair:"#222",suit:"#2e6e46",trim:"#fff"}},
+    {id:"fisher",x:9,y:6,name:"Old Fisher",pal:{hair:"#ddd",suit:"#555f7a",trim:"#7ee0ff"}}
+  ],
+  spots:[{x:7,y:2,id:"fountain"},{x:7,y:8,id:"crystal"}]
+},
+cavern:{ name:"Fire Cavern", bg:"#4a1710",
+  rows:[
+  "###############",
+  "#......B......#",
+  "#.............#",
+  "#..LL.....LL..#",
+  "#..LL.....LL..#",
+  "#......#......#",
+  "#.P....#....P.#",
+  "#.............#",
+  "#..L.......L..#",
+  "#......S......#",
+  "######EEE######"],
+  solid:"#LPB", exits:{E:{to:"field",x:13,y:5}},
+  npcs:[ {id:"guard",x:7,y:8,name:"Garden Faculty",pal:{hair:"#333",suit:"#3c3c50",trim:"#ffd94a"}} ],
+  spots:[{x:7,y:9,id:"crystal"}],
+  encounter:{tiles:".", rate:0.2, table:["bomb","redbat","buel","bomb"]}
+}};
+Object.keys(MAPS).forEach(function(k){
+  var m=MAPS[k];
+  m.grid=m.rows.map(function(r){ while(r.length<MW) r+="#"; return r.slice(0,MW).split(""); });
+  while(m.grid.length<MH) m.grid.push(new Array(MW).fill("#"));
+});
+function tileAt(map,x,y){
+  if(x<0||y<0||x>=MW||y>=MH) return "#";
+  return MAPS[map].grid[y][x];
+}
+function isSolid(map,x,y){
+  var t=tileAt(map,x,y), m=MAPS[map];
+  if(m.solid.indexOf(t)>=0) return true;
+  return m.npcs.some(function(n){ return n.x===x&&n.y===y; });
+}
+
+/* ---------- pixel drawing ---------- */
+var cv=$("game"), ctx=cv.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function drawChibi(x,y,pal,dir,frame){
+  /* 28x30 chibi at tile origin x,y */
+  var bob=(frame%2===0)?0:1, ox=x+2, oy=y+2-bob;
+  px(ox+6,oy+22,6,6,"#20202c"); px(ox+16,oy+22,6,6,"#20202c"); /* boots */
+  px(ox+5,oy+14,18,9,pal.suit);                                /* body */
+  px(ox+12,oy+14,4,9,pal.trim);                                /* trim   */
+  px(ox+1,oy+15,4,7,pal.suit); px(ox+23,oy+15,4,7,pal.suit);   /* arms   */
+  px(ox+6,oy+2,16,12,"#f2c79b");                               /* face   */
+  px(ox+6,oy+0,16,6,pal.hair); px(ox+4,oy+2,4,8,pal.hair); px(ox+20,oy+2,4,8,pal.hair); /* hair */
+  if(dir!=="up"){ px(ox+9,oy+8,3,3,"#14141f"); px(ox+16,oy+8,3,3,"#14141f"); } /* eyes */
+  if(dir==="left"){ px(ox+2,oy+6,3,3,"#14141f"); }
+  if(dir==="right"){ px(ox+23,oy+6,3,3,"#14141f"); }
+}
+function drawTile(map,t,x,y){
+  var X=x*TILE, Y=y*TILE;
+  if(map==="garden"||map==="town"){
+    px(X,Y,32,32, (x+y)%2? "#2a3160":"#272d58");
+    px(X,Y+30,32,2,"rgba(0,0,0,.25)");
+    if(map==="town"){ px(X,Y,32,32,(x+y)%2? "#51688f":"#4c6287"); }
+  } else if(map==="field"){
+    px(X,Y,32,32,(x+y)%2? "#2f7a38":"#2c7234"); px(X+4,Y+6,3,3,"#3f9a48"); px(X+24,Y+22,3,3,"#3f9a48");
+  } else if(map==="cavern"){
+    px(X,Y,32,32,(x+y)%2? "#57241a":"#52211a"); px(X+3,Y+4,4,2,"#6e3222"); px(X+22,Y+24,4,2,"#6e3222");
+  }
+  switch(t){
+    case "#":
+      if(map==="cavern"){ px(X,Y,32,32,"#38120c"); px(X+2,Y+8,10,6,"#482016"); px(X+16,Y+20,12,6,"#482016"); px(X,Y+28,32,4,"#200a06"); }
+      else if(map==="town"){ px(X,Y,32,32,"#6b4a2f"); px(X,Y,32,6,"#8a5f3a"); px(X+4,Y+12,8,8,"#ffd94a"); px(X+20,Y+12,8,8,"#2a2f4a"); px(X,Y+28,32,4,"#3c2817"); }
+      else { px(X,Y,32,32,"#1c2148"); px(X+3,Y+3,26,26,"#232a5c"); px(X+3,Y+3,26,3,"#39448c"); }
+      break;
+    case "D": px(X+2,Y+8,28,16,"#7a4a22"); px(X+2,Y+8,28,3,"#a06a34"); px(X+6,Y+12,8,5,"#dfe6ff"); px(X+18,Y+12,8,5,"#7ee0ff"); break;
+    case "B": if(map==="garden"){ px(X-2,Y-6,36,24,"#12351c"); px(X-2,Y-6,36,3,"#7a4a22"); px(X+3,Y,20,2,"#bfe8c8"); px(X+3,Y+6,26,2,"#bfe8c8"); px(X+3,Y+12,16,2,"#ffd94a"); } break;
+    case "T":
+      if(map==="field"){ px(X+13,Y+12,6,18,"#5a3a1a"); px(X+2,Y-4,28,20,"#1f5c28"); px(X+6,Y-8,20,12,"#2c7a38"); px(X+10,Y+2,4,4,"#ff5a5a"); px(X+20,Y+6,4,4,"#ffd94a"); }
+      else { px(X+3,Y+10,26,14,"#3a3f6e"); px(X+6,Y+4,20,7,"#7ee0ff"); px(X+8,Y+6,16,3,"#dff6ff"); px(X+13,Y+24,6,4,"#22264d"); }
+      break;
+    case "P": px(X+10,Y+18,12,10,"#a34d24"); px(X+6,Y+2,20,16,"#2c7a38"); px(X+10,Y+6,4,4,"#ff7db0"); px(X+18,Y+10,4,4,"#ffd94a"); break;
+    case "=": px(X,Y+4,32,24,"#c2a06a"); px(X,Y+4,32,3,"#a8845a"); px(X+6,Y+14,6,3,"#a8845a"); px(X+20,Y+20,6,3,"#a8845a"); break;
+    case "*": px(X+5,Y+8,4,4,"#ff7db0"); px(X+20,Y+18,4,4,"#ffd94a"); px(X+12,Y+24,4,4,"#fff"); break;
+    case "~": px(X,Y,32,32,"#1f4d8f"); px(X+3,Y+8,10,3,"#4d8fd6"); px(X+18,Y+20,10,3,"#4d8fd6"); break;
+    case "L": px(X,Y,32,32,"#c22e0c"); px(X+4,Y+6,10,6,"#ff7a1e"); px(X+16,Y+18,12,7,"#ffb04a"); px(X+8,Y+22,8,5,"#ff7a1e"); break;
+    case "S":
+      if(map==="town"){ px(X,Y,32,32,"#51688f"); px(X+6,Y+2,20,20,"#7ee0ff"); px(X+9,Y+5,14,14,"#dff6ff"); px(X+14,Y+22,4,10,"#8a5f3a"); }
+      else { var gl=0.6+0.4*Math.sin(Date.now()/300); px(X+8,Y+4,16,24,"rgba(126,224,255,"+(0.35*gl)+")"); px(X+12,Y+8,8,16,"#bff1ff"); px(X+15,Y+2,2,28,"#fff"); }
+      break;
+    case "F": px(X+4,Y+4,24,24,"#6a76a8"); px(X+8,Y+8,16,16,"#7ee0ff"); px(X+13,Y+0,6,10,"#dff6ff"); break;
+    case "I": case "H": px(X,Y,32,32,"#6b4a2f"); break;
+    case "E": case "G": case "W": case "V":
+      px(X+4,Y+2,24,30,"#12082a"); px(X+4,Y+2,24,4,"#ffd94a"); px(X+8,Y+10,4,4,"#7ee0ff"); px(X+20,Y+16,4,4,"#7ee0ff"); px(X+13,Y+22,6,4,"#fff");
+      break;
+    case "B": break;
+  }
+  if((t==="S"&&map==="town")||t==="F"){ }
+  if(map==="town"&&(t==="S")){ ctx.fillStyle="#fff"; ctx.font="10px monospace"; }
+}
+var animFrame=0;
+function render(){
+  var m=MAPS[G.map];
+  px(0,0,480,352,m.bg);
+  for(var y=0;y<MH;y++) for(var x=0;x<MW;x++) drawTile(G.map, m.grid[y][x], x, y);
+  /* shop / inn labels */
+  if(G.map==="town"){ ctx.fillStyle="#fff"; ctx.font="bold 11px monospace"; ctx.fillText("SHOP",42,26); ctx.fillText("INN",396,26); }
+  if(G.map==="cavern" && !G.flags.ifrit){ drawIfritIdle(7*TILE,0*TILE); }
+  m.npcs.forEach(function(n){
+    if(n.sign){ px(n.x*32+6,n.y*32+8,20,14,"#7a4a22"); px(n.x*32+14,n.y*32+18,4,12,"#5a3a1a"); ctx.fillStyle="#ffe9a8"; ctx.font="9px monospace"; ctx.fillText("?",n.x*32+13,n.y*32+19); return; }
+    drawChibi(n.x*32,n.y*32,n.pal,"down",0);
+    ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillRect(n.x*32+1,n.y*32-9,30,11);
+    ctx.fillStyle="#fff"; ctx.font="9px monospace"; ctx.textAlign="center"; ctx.fillText(n.name.split(" ")[0],n.x*32+16,n.y*32); ctx.textAlign="left";
+  });
+  if(G.mode!=="battle"){
+    var hero=party[0];
+    drawChibi(G.px*TILE,G.py*TILE,hero.pal,G.dir,animFrame);
+    ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillRect(G.px*32+1,G.py*32-9,30,11);
+    ctx.fillStyle="#ffd94a"; ctx.font="9px monospace"; ctx.textAlign="center"; ctx.fillText("SQUALL",G.px*32+16,G.py*32); ctx.textAlign="left";
+  }
+  if(B.active) drawBattle();
+  requestAnimationFrame(render);
+}
+function drawIfritIdle(x,y){
+  px(x+4,y+26,24,10,"#7a1e0c"); px(x+6,y+12,20,16,"#a82c10");
+  px(x+2,y+4,7,10,"#e8c33a"); px(x+23,y+4,7,10,"#e8c33a");
+  px(x+10,y+14,4,4,"#ffd94a"); px(x+19,y+14,4,4,"#ffd94a");
+  px(x+8,y+30,5,4,"#ff7a1e"); px(x+20,y+30,5,4,"#ff7a1e");
+}
+
+/* ---------- dialogue engine ---------- */
+var dlg={ steps:[], i:0, typing:false, full:"", shown:0, onDone:null, active:false };
+function say(steps,onDone){
+  G.mode="dialog"; dlg.steps=steps; dlg.i=0; dlg.onDone=onDone||null; dlg.active=true;
+  showStep();
+}
+function showStep(){
+  var s=dlg.steps[dlg.i];
+  $("dlgChoices").style.display="none"; $("dlgChoices").innerHTML="";
+  if(!s){ endDialog(); return; }
+  if(s.choice){
+    $("dlgName").textContent=s.who||"";
+    setDlgText(s.text||"Choose:");
+    var box=$("dlgChoices"); box.style.display="flex";
+    s.choice.forEach(function(opt,idx){
+      var b=document.createElement("button"); b.type="button";
+      b.textContent="▶ "+opt.label;
+      b.addEventListener("click",function(ev){ ev.stopPropagation(); pickChoice(opt); });
+      box.appendChild(b);
+    });
+    $("dlgHint").style.display="none";
+    return;
+  }
+  $("dlgHint").style.display="block";
+  $("dlgName").textContent=s.who||"";
+  setDlgText(s.text||"");
+  AudioSys.cursor();
+}
+function setDlgText(t){
+  dlg.full=t; dlg.shown=0; dlg.typing=true; $("dlgText").textContent="";
+}
+setInterval(function(){
+  if(dlg.typing && dlg.active){
+    dlg.shown+=2;
+    $("dlgText").textContent=dlg.full.slice(0,dlg.shown);
+    if(dlg.shown>=dlg.full.length) dlg.typing=false;
+  }
+},18);
+function pickChoice(opt){
+  AudioSys.accept();
+  $("dlgChoices").style.display="none";
+  if(opt.do) opt.do();
+  if(opt.lines && opt.lines.length){ dlg.steps=dlg.steps.slice(0,dlg.i+1).concat(opt.lines).concat(dlg.steps.slice(dlg.i+1)); }
+  dlg.i++; showStep(); updateHUD();
+}
+function advanceDialog(){
+  if(!dlg.active) return;
+  var s=dlg.steps[dlg.i];
+  if(s && s.choice) return;
+  if(dlg.typing){ dlg.shown=dlg.full.length; dlg.typing=false; $("dlgText").textContent=dlg.full; return; }
+  AudioSys.accept(); dlg.i++; showStep();
+}
+function endDialog(){
+  dlg.active=false; $("dlgText").textContent="…"; $("dlgName").textContent="";
+  $("dlgChoices").style.display="none";
+  if(G.mode==="dialog") G.mode="explore";
+  var cb=dlg.onDone; dlg.onDone=null; if(cb) cb();
+  updateHUD();
+}
+$("dialogueBox").addEventListener("click",function(){ AudioSys.ensure(); if(G.mode==="dialog") advanceDialog(); });
+
+/* ---------- HUD / panels ---------- */
+function hpBar(m){
+  var pct=clamp(Math.round(m.hp/m.maxhp*100),0,100);
+  return '<div class="bar'+(pct<=25?" low":"")+'"><i style="width:'+pct+'%"></i></div>';
+}
+function updateHUD(){
+  $("hudPlace").textContent=MAPS[G.map].name;
+  $("hudGil").textContent=G.gil+" G";
+  $("hudQuest").textContent=questText();
+  $("partyList").innerHTML=party.map(function(m){
+    var waiting = !G.flags.metTeam && m.name!=="Squall";
+    return '<div class="party-card"'+(waiting?' style="opacity:.55"':"")+'><div class="party-head"><span class="party-name">'+m.name+(m.alive?"":" · KO")+'</span><span class="party-job">Lv '+m.level+" · "+m.job+'</span></div>'
+      + hpBar(m)
+      + '<div class="hp-line"><span>HP '+Math.max(0,m.hp)+" / "+m.maxhp+'</span><span>ATK '+(partyAtk(m))+" · DEF "+partyDef(m)+'</span></div>'
+      + '<div class="hp-line"><span>'+m.weapon+'</span><span>'+(waiting?"Waiting at the south door":("XP "+m.xp))+"</span></div></div>";
+  }).join("");
+  $("stockList").innerHTML=Object.keys(G.stock).map(function(k){
+    return '<div class="kv"><span>'+k+'</span><b>× '+G.stock[k]+"</b></div>";
+  }).join("");
+  var gfs=["Quezacotl","Shiva"]; if(G.flags.ifrit) gfs.push("Ifrit");
+  $("gfList").innerHTML=(G.flags.gotGF? gfs.map(function(g){ return '<div class="kv"><span>'+g+'</span><b>Junctioned</b></div>'; }).join("") : '<div class="kv"><span>None yet</span><b>—</b></div>');
+  $("bagList").innerHTML=Object.keys(G.items).map(function(k){
+    return '<div class="kv"><span>'+k+'</span><b>× '+G.items[k]+"</b></div>";
+  }).join("")+'<div class="kv"><span>Weapon tier</span><b>'+WEAPONS[G.gear.weapon].name+"</b></div>"
+    +'<div class="kv"><span>Armor</span><b>'+ARMORS[G.gear.armor].name+"</b></div>";
+}
+function questText(){
+  if(G.flags.ended) return "SeeD — mission complete!";
+  if(G.flags.ifrit && !G.flags.widow) return "Return across the plains — something's wrong…";
+  if(G.flags.ifrit) return "Report to the Garden lobby";
+  if(!G.flags.intro) return "Talk to Instructor Quistis";
+  if(!G.flags.gotGF) return "Use the classroom terminal (west) to get your GFs";
+  if(!G.flags.metTeam) return "Meet Zell & Selphie in the lobby (south door)";
+  if(!G.flags.cavePermit) return "Head east across the plains to the Fire Cavern";
+  return "Enter the Fire Cavern and face Ifrit";
+}
+
+/* ---------- story & interactions ---------- */
+function healParty(full){
+  party.forEach(function(m){ if(full||m.alive){ m.hp=m.maxhp; m.alive=true; } });
+  AudioSys.heal(); updateHUD();
+}
+function interact(){
+  if(G.mode!=="explore") return;
+  var dx=0,dy=0;
+  if(G.dir==="up")dy=-1; if(G.dir==="down")dy=1; if(G.dir==="left")dx=-1; if(G.dir==="right")dx=1;
+  var tx=G.px+dx, ty=G.py+dy, m=MAPS[G.map];
+  var npc=m.npcs.find(function(n){ return n.x===tx&&n.y===ty; });
+  if(npc){ talkTo(npc); return; }
+  var spot=m.spots.find(function(s){ return s.x===tx&&s.y===ty; });
+  if(spot){ useSpot(spot); return; }
+  var t=tileAt(G.map,tx,ty);
+  if(G.map==="garden"&&t==="B"){ say([{who:"BLACKBOARD",text:"Written in neat chalk: “Junction a GF before you draw magic. A drawn spell you don't cast is power you keep.”\n\nUnderneath, someone has scratched: “whatever.” — probably Squall."}]); return; }
+  if(G.map==="town"&&t==="S"&&(tx<=2)){ openShop(); return; }
+  if(G.map==="town"&&t==="I"){ talkInn(); return; }
+}
+function useSpot(spot){
+  if(spot.id==="terminal"){
+    if(G.flags.gotGF){ say([{who:"TERMINAL",text:"STUDY PANEL: Quezacotl and Shiva are junctioned. The panel hums a little smugly, the way Quistis does when she's right."}]); return; }
+    say([
+      {who:"TERMINAL",text:"BALAMB GARDEN STUDY PANEL\nWelcome, Squall Leonhart. Two Guardian Forces are registered to your file."},
+      {who:"TERMINAL",text:"Quezacotl — the Thunder Bird, first summoned centuries ago. Shiva — the Ice Queen, calm as deep water."},
+      {choice:[
+        {label:"Junction Quezacotl & Shiva", do:function(){ G.flags.gotGF=true; logEvent("<b>GF obtained:</b> Quezacotl & Shiva junctioned."); }, lines:[{who:"SYSTEM",text:"GF QUEZACOTL junctioned!\nGF SHIVA junctioned!\n\nYou can now use DRAW and GF in battle. Talk to Quistis if you haven't — then find Zell and Selphie at the south door."}]},
+        {label:"Read the tutorial first", lines:[{who:"TERMINAL",text:"TUTORIAL: In battle, DRAW steals spell stock from enemies. MAGIC spends stock. GF summons a Guardian Force for huge damage — it costs the summoner nothing but a turn, so use it when it counts."},{who:"TERMINAL",text:"Low HP unlocks LIMIT BREAKS. Junction wisely, cadet."}], },
+        {label:"“…whatever.”", lines:[{who:"TERMINAL",text:"The terminal prints a single line: “Noted. Junctioning anyway.”\n\nGF QUEZACOTL and GF SHIVA junctioned! (The Garden knows you, Squall.)"}], do:function(){ G.flags.gotGF=true; logEvent("<b>GF obtained:</b> Quezacotl & Shiva junctioned."); }}
+      ]}
+    ]);
+    return;
+  }
+  if(spot.id==="crystal"){
+    healParty(true);
+    say([{who:"SAVE CRYSTAL",text:"Warm light washes over the party. HP fully restored!\n(Progress isn't written anywhere — this crystal just believes in you.)"}]);
+    logEvent("Party healed at a <b>crystal</b>.");
+    return;
+  }
+  if(spot.id==="fountain"){
+    if(G.flags.fountain){ say([{who:"FOUNTAIN",text:"Coins glint under the water. Someone wished for a passing grade. Someone else wished for hot dogs."}]); return; }
+    G.flags.fountain=true; G.gil+=77;
+    say([{who:"FOUNTAIN",text:"You fish out a lucky coin someone tossed in. +77 gil!\nZell, somewhere, feels a disturbance — that was probably his lunch money."}]);
+    logEvent("Found <b>77 gil</b> in the fountain.");
+    return;
+  }
+}
+function talkInn(){
+  say([
+    {who:"INNKEEPER",text:"Balamb Hotel — best beds this side of the plains, 100 gil a night. The seagulls are complimentary and extremely loud."},
+    {choice:[
+      {label:"Rest — 100 gil", do:function(){
+          if(G.gil>=100){ G.gil-=100; healParty(true); logEvent("Rested at the <b>inn</b>. HP restored."); }
+          else { G.score-=0; }
+        }, lines:[{who:"INNKEEPER",text: G.gil>=100 ? "Sleep well, SeeD candidates! …You did sleep, right? You were muttering about a sorceress again." : "Oh — you're short on gil, dear. Rest on the bench outside, no charge. We've all been students."}]},
+      {label:"Just looking around", lines:[{who:"INNKEEPER",text:"Mind the cat. He runs the place, I just hold the keys."}]}
+    ]}
+  ]);
+}
+function talkTo(npc){
+  AudioSys.ensure();
+  if(npc.id==="quistis"){
+    if(!G.flags.intro){
+      G.flags.intro=true;
+      say([
+        {who:"QUISTIS",text:"Good morning, Squall. Sleep well? …You were in the infirmary again. Seifer, I suppose."},
+        {who:"SQUALL",text:"…It was nothing."},
+        {who:"QUISTIS",text:"It never is, with you two. Listen — today is the field exam. The real one. Pass it, and you graduate as SeeD."},
+        {who:"QUISTIS",text:"Your target is the Fire Cavern, east across the plains. Something old and hot has woken up in there. Your job: face it, and come back."},
+        {choice:[
+          {label:"“What's waiting in the cavern?”", lines:[{who:"QUISTIS",text:"Ifrit. A Guardian Force of fire, older than this Garden. Defeat him and he'll lend you his strength — GFs respect only those who earn it."},{who:"QUISTIS",text:"Before you go: use the study terminal on the west wall. Two GFs are registered to you. Junction them. That's an order, not a suggestion."}]},
+          {label:"“Why me?”", lines:[{who:"QUISTIS",text:"Because you junction better than anyone in your class, because Zell and Selphie trust you, and because — "},{who:"QUISTIS",text:"— because I was your instructor, and I know what you're capable of, even when you pretend not to care. Terminal. West wall. GFs. Go."}]},
+          {label:"“…whatever.”", lines:[{who:"QUISTIS",text:"…One day, Squall, you'll finish a sentence with me. Until then: the terminal on the west wall holds your GFs. Junction them before you leave."},{who:"SYSTEM",text:"(Quistis hides a smile. She absolutely counted that as a sentence.)"}]}
+        ]},
+        {who:"QUISTIS",text:"Zell and Selphie are waiting by the south door. Oh — and Squall? Good luck. Not that you'll need it."}
+      ],function(){ logEvent("Exam briefing received from <b>Quistis</b>."); });
+      return;
+    }
+    if(G.flags.ifrit){
+      say([{who:"QUISTIS",text:"You smell like a campfire and victory. Ifrit bows to you now — half the faculty owes me money. Well done, Squall."}]);
+      return;
+    }
+    say([{who:"QUISTIS",text: G.flags.gotGF ? "Good — I can feel Quezacotl's static from here. South door, Squall. Your team is waiting." : "The terminal, west wall. Junction your GFs first — I won't sign off on an exam run without them."}]);
+    return;
+  }
+  if(npc.id==="student1") { say([{who:"STUDENT",text:"I heard Seifer failed the exam three times. Three! He says the cavern was 'having an off day.'"}]); return; }
+  if(npc.id==="student2") { say([{who:"STUDENT",text:"Draw magic before you cast it — a Bomb in the cavern is basically a walking Fire spell with anger issues."}]); return; }
+  if(npc.id==="signpost"){ say([{who:"SIGNPOST",text:"◀ BALAMB TOWN — beds, bread, and the famous hot-dog stand.\n▶ FIRE CAVERN — SeeD exam site. Authorized candidates only. No refunds on eyebrows.\n▼ BALAMB GARDEN"}]); return; }
+  if(npc.id==="shopkeep"){ openShop(); return; }
+  if(npc.id==="innkeep"){ talkInn(); return; }
+  if(npc.id==="kid"){ say([{who:"KID",text:"When I grow up I'm gonna be a SeeD and fight a T-Rexaur with a stick! …Okay maybe a bigger stick."}]); return; }
+  if(npc.id==="fisher"){ say([{who:"OLD FISHER",text:"Sea's been strange, friend. Fish swimming backwards, gulls flying in squares. Like something big is dreaming out there. You Garden folk feel it too, eh?"}]); return; }
+  if(npc.id==="guard"){
+    if(G.flags.ifrit){ say([{who:"GARDEN FACULTY",text:"Ifrit acknowledged you. In twenty years I've seen that twice. Go home a SeeD, candidate."}]); return; }
+    if(!G.flags.gotGF){ say([{who:"GARDEN FACULTY",text:"Hold it. No GF junctioned, no entry — that's regulation, and also just good sense. The Garden terminal has two GFs with your name on them."}]); G.px=7; G.py=8; return; }
+    if(!G.flags.cavePermit){
+      G.flags.cavePermit=true;
+      say([
+        {who:"GARDEN FACULTY",text:"Candidates Squall, Zell, Selphie — checked in. The support team will monitor from here. Standard rule: candidates who flee the exam forfeit marks."},
+        {who:"ZELL",text:"Flee? Ha! I did push-ups all morning for this. My fists are basically Guardian Forces."},
+        {who:"SELPHIE",text:"Woo-hoo! Cave time! I brought snacks, a rope, and an unreasonable amount of optimism!"},
+        {choice:[
+          {label:"“Stay sharp in there.”", lines:[{who:"SELPHIE",text:"Sharp! Got it! Sharper than sharp!"}]},
+          {label:"“No snack breaks mid-boss.”", lines:[{who:"ZELL",text:"…One tiny hot dog? No? Fine. IFRIT gets the snack break, then."}]},
+          {label:"Say nothing. Walk in.", lines:[{who:"SELPHIE",text:"Ooh, dramatic. He does that. You'll get used to it."}]}
+        ]},
+        {who:"GARDEN FACULTY",text:"Ifrit waits in the north chamber. May your junctions hold, candidates."}
+      ],function(){ logEvent("Entered the <b>Fire Cavern</b> exam."); });
+      return;
+    }
+    say([{who:"GARDEN FACULTY",text:"North chamber, candidates. Watch the lava — it does not junction, it just burns."}]);
+    return;
+  }
+  say([{who:npc.name,text:"…"}]);
+}
+
+/* ---------- movement ---------- */
+var DIRS={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+function tryMove(dir){
+  if(G.mode!=="explore") return;
+  G.dir=dir; animFrame++;
+  var d=DIRS[dir], nx=G.px+d[0], ny=G.py+d[1];
+  var t=tileAt(G.map,nx,ny), m=MAPS[G.map];
+  if(m.exits[t]){ travel(m.exits[t]); return; }
+  if(isSolid(G.map,nx,ny)){
+    /* bump-interact: talking to whoever you walked into */
+    var npc=m.npcs.find(function(n){ return n.x===nx&&n.y===ny; });
+    if(npc) talkTo(npc);
+    var spot=m.spots.find(function(s){ return s.x===nx&&s.y===ny; });
+    if(spot) useSpot(spot);
+    if(G.map==="cavern"&&t==="B"&&!G.flags.ifrit){ startIfrit(); }
+    return;
+  }
+  G.px=nx; G.py=ny; G.steps++;
+  AudioSys.beep(220+Math.random()*40,0.03,"square",0.012);
+  /* story trigger: meeting the team at garden exit handled in travel() */
+  var enc=m.encounter;
+  if(enc && enc.tiles.indexOf(t)>=0 && Math.random()<enc.rate){
+    var table=enc.table.slice();
+    var n=rnd(1,2), foes=[];
+    for(var i=0;i<n;i++) foes.push(table[rnd(0,table.length-1)]);
+    startBattle(foes,null);
+  }
+  /* ambush trigger on the way home */
+  if(G.mode==="explore"&&G.map==="field"&&G.flags.ifrit&&!G.flags.widow&&G.px<=3){
+    G.flags.widow=true;
+    say([
+      {who:"SELPHIE",text:"Um. Guys? Does the ground usually shake in squares?"},
+      {who:"ZELL",text:"That's no earthquake — that's METAL. Look out!"},
+      {who:"SQUALL",text:"(Galbadia markings. A Black Widow — X-ATM092 class. They sent a machine to do a coward's job.)"},
+      {who:"SELPHIE",text:"It followed us from the cavern road?! Rude! We just passed an exam, we deserve CAKE, not this!"},
+      {choice:[
+        {label:"“Form up. We end it here.”", lines:[{who:"ZELL",text:"YEAH! Dinner AND a show!"}]},
+        {label:"“Selphie — aim for the legs.”", lines:[{who:"SELPHIE",text:"Legs! Got it! All eight of 'em!"}]}
+      ]},
+      {who:"SQUALL",text:"(Whatever it wants — it's between us and home.)"}
+    ],function(){ startBattle(["blackwidow"],"boss"); });
+  }
+}
+function travel(dest){
+  AudioSys.accept();
+  var from=G.map;
+  G.map=dest.to||dest; if(dest.to){ G.px=dest.x; G.py=dest.y; }
+  if(from==="garden"&&G.map==="field"&&!G.flags.metTeam){
+    if(!G.flags.gotGF){
+      G.map="garden"; G.px=7; G.py=8;
+      say([{who:"QUISTIS (over the intercom)",text:"Squall. The terminal. West wall. GFs. I can do this all day — it's my favorite part of the job."}]);
+      return;
+    }
+    G.flags.metTeam=true;
+    say([
+      {who:"ZELL",text:"Yo, Squall! Finally! Zell Dincht, martial artist, hot-dog enthusiast. We're on your squad, man!"},
+      {who:"SELPHIE",text:"And I'm Selphie Tilmitt, transfer from Trabia! I already memorized everyone's names and birthdays and favorite explosions!"},
+      {who:"SQUALL",text:"…The exam's in the Fire Cavern. East. Don't fall behind."},
+      {choice:[
+        {label:"“Let's move.” (walk on)", lines:[{who:"ZELL",text:"Cold. I respect it. Let's GO!"}]},
+        {label:"Ask Selphie about Trabia", lines:[{who:"SELPHIE",text:"Trabia's up north — snow, missiles, the BEST garden festival. I ran the festival committee! I run everything, eventually."},{who:"ZELL",text:"She really does. Resistance is adorable but futile."}]}
+      ]},
+      {who:"SYSTEM",text:"ZELL and SELPHIE joined the party!\n(Town is west if you want supplies. The cavern is east. The plains are… bitey.)"}
+    ],function(){ logEvent("<b>Zell & Selphie</b> joined the party."); });
+  }
+  if(G.map==="cavern"&&from==="field"&&!G.flags.cavePermit){
+    /* guard greets on entry via bumping/walking to him — allow entry */
+  }
+  updateHUD();
+}
+
+/* ---------- shop & menu ---------- */
+function openOverlay(id){ $(id).classList.add("open"); G.mode="overlay"; }
+function closeOverlay(id){ $(id).classList.remove("open"); if(G.mode==="overlay") G.mode="explore"; }
+document.querySelectorAll("[data-close]").forEach(function(b){
+  b.addEventListener("click",function(){ AudioSys.cancel(); closeOverlay(b.getAttribute("data-close")); });
+});
+var SHOP_ITEMS=[
+  {id:"Potion", price:100, desc:"Restores 200 HP to one ally."},
+  {id:"Hi-Potion", price:500, desc:"Restores 600 HP to one ally."},
+  {id:"Phoenix Down", price:500, desc:"Revives a KO'd ally."},
+  {id:"Antidote", price:100, desc:"A tonic. Tastes like victory and mint."}
+];
+function openShop(){
+  if(G.mode==="battle") return;
+  $("shopIntro").textContent="“Welcome to Balamb Supply! Exam day special: everything's full price, but the encouragement is free.”";
+  renderShop(); openOverlay("shopOverlay"); AudioSys.accept();
+}
+function renderShop(){
+  $("shopGil").textContent=G.gil+" G";
+  var html=SHOP_ITEMS.map(function(it){
+    return '<button type="button" class="shop-row" data-buy="'+it.id+'" data-price="'+it.price+'"><span>'+it.id+' <small>'+it.desc+" · owned × "+G.items[it.id]+'</small></span><span class="price">'+it.price+' G</span></button>';
+  }).join("");
+  html+='<div style="margin:12px 0 4px; color:var(--accent2);">— EQUIPMENT (whole party) —</div>';
+  var w=WEAPONS[G.gear.weapon+1];
+  if(w) html+='<button type="button" class="shop-row" data-gear="weapon"><span>'+w.name+' <small>Upgrade from: '+WEAPONS[G.gear.weapon].name+'</small></span><span class="price">'+w.cost+' G</span></button>';
+  else html+='<div class="kv"><span>Weapons</span><b>MAX — Lion Heart set</b></div>';
+  var a=ARMORS[G.gear.armor+1];
+  if(a) html+='<button type="button" class="shop-row" data-gear="armor"><span>'+a.name+' <small>Upgrade from: '+ARMORS[G.gear.armor].name+'</small></span><span class="price">'+a.cost+' G</span></button>';
+  else html+='<div class="kv"><span>Armor</span><b>MAX — Diamond Mail</b></div>';
+  $("shopBody").innerHTML=html;
+  $("shopBody").querySelectorAll("[data-buy]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var price=+b.getAttribute("data-price"), id=b.getAttribute("data-buy");
+      if(G.gil<price){ AudioSys.cancel(); $("shopIntro").textContent="“Short on gil, friend. The plains pay in experience and, occasionally, gil.”"; return; }
+      G.gil-=price; G.items[id]++; AudioSys.accept();
+      $("shopIntro").textContent="Bought "+id+"! (“One more hot dog for the road? …Kidding. Mostly.”)";
+      renderShop(); updateHUD();
+    });
+  });
+  $("shopBody").querySelectorAll("[data-gear]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var kind=b.getAttribute("data-gear");
+      var next= kind==="weapon"? WEAPONS[G.gear.weapon+1] : ARMORS[G.gear.armor+1];
+      if(!next) return;
+      if(G.gil<next.cost){ AudioSys.cancel(); $("shopIntro").textContent="“That upgrade's beyond a student budget. Battle a few Bite Bugs — they carry loose change, don't ask me how.”"; return; }
+      G.gil-=next.cost; if(kind==="weapon") G.gear.weapon++; else G.gear.armor++;
+      AudioSys.accept(); $("shopIntro").textContent="Upgraded! The whole party feels tougher already.";
+      renderShop(); updateHUD();
+    });
+  });
+}
+function openMenu(){
+  if(G.mode==="battle"||G.mode==="dialog") return;
+  var html="";
+  html+=party.map(function(m,i){
+    return '<div class="kv"><span>'+m.name+" · Lv "+m.level+" · "+m.job+'</span><b>HP '+Math.max(0,m.hp)+"/"+m.maxhp+" · ATK "+partyAtk(m)+" · DEF "+partyDef(m)+"</b></div>";
+  }).join("");
+  html+='<div style="margin:12px 0 4px; color:var(--accent2);">— USE ITEM —</div>';
+  Object.keys(G.items).forEach(function(k){
+    if(G.items[k]>0) html+='<button type="button" class="menu-row" data-use="'+k+'"><span>'+k+'</span><span>× '+G.items[k]+"</span></button>";
+  });
+  html+='<div style="margin:12px 0 4px; color:var(--accent2);">— HOW TO PLAY —</div>';
+  html+='<p style="margin:0;">Explore with the arrow keys. Bump into people to talk. In battle: <b>Draw</b> steals spell stock, <b>Magic</b> spends it, <b>GF</b> summons a Guardian Force, and a flashing <b>LIMIT</b> command appears when an ally is badly hurt. Cross the plains west for the town shop & inn, east for the Fire Cavern.</p>';
+  $("menuBody").innerHTML=html;
+  $("menuBody").querySelectorAll("[data-use]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var id=b.getAttribute("data-use");
+      var target=aliveParty().sort(function(a,b2){ return (a.hp/a.maxhp)-(b2.hp/b2.maxhp); })[0];
+      var ko=party.find(function(m){ return !m.alive; });
+      if(id==="Phoenix Down"){ if(!ko){ $("shopIntro"); return; } ko.alive=true; ko.hp=Math.floor(ko.maxhp*0.25); G.items[id]--; }
+      else if(id==="Potion"||id==="Hi-Potion"){ if(!target) return; target.hp=clamp(target.hp+(id==="Potion"?200:600),0,target.maxhp); G.items[id]--; }
+      else { G.items[id]--; }
+      AudioSys.heal(); openMenu(); updateHUD();
+    });
+  });
+  openOverlay("menuOverlay");
+}
+$("btnMenu").addEventListener("click",function(){ AudioSys.ensure(); openMenu(); });
+$("btnSound").addEventListener("click",function(){
+  AudioSys.on=!AudioSys.on; this.textContent=AudioSys.on?"♪ SOUND: ON":"♪ SOUND: OFF";
+  if(AudioSys.on) AudioSys.accept();
+});
+
+/* ---------- input ---------- */
+document.addEventListener("keydown",function(e){
+  AudioSys.ensure();
+  var k=e.key;
+  if(G.mode==="dialog"){ if(k==="Enter"||k==="z"||k==="Z"||k===" "){ e.preventDefault(); advanceDialog(); } return; }
+  if(G.mode==="overlay"){ if(k==="Escape"||k==="x"||k==="X"){ document.querySelectorAll(".overlay.open").forEach(function(o){ closeOverlay(o.id); }); } return; }
+  if(G.mode==="battle"){ battleKey(k); return; }
+  if(k==="ArrowUp"||k==="w"||k==="W") tryMove("up");
+  else if(k==="ArrowDown"||k==="s"||k==="S") tryMove("down");
+  else if(k==="ArrowLeft"||k==="a"||k==="A") tryMove("left");
+  else if(k==="ArrowRight"||k==="d"||k==="D") tryMove("right");
+  else if(k==="Enter"||k==="z"||k==="Z") interact();
+  else if(k==="Escape"||k==="x"||k==="X") openMenu();
+  else return;
+  e.preventDefault();
+});
+document.querySelectorAll("[data-dir]").forEach(function(b){
+  b.addEventListener("click",function(){ AudioSys.ensure(); if(G.mode==="dialog") advanceDialog(); else tryMove(b.getAttribute("data-dir")); });
+});
+$("btnA").addEventListener("click",function(){ AudioSys.ensure(); if(G.mode==="dialog") advanceDialog(); else if(G.mode==="battle") battleConfirm(); else interact(); });
+$("btnB").addEventListener("click",function(){ AudioSys.ensure(); if(G.mode==="battle") battleCancel(); else if(G.mode==="overlay") document.querySelectorAll(".overlay.open").forEach(function(o){ closeOverlay(o.id); }); else openMenu(); });
+
+/* ---------- battle engine ---------- */
+var ENEMIES={
+  bitebug:{name:"Bite Bug",hp:95,atk:15,def:3,spd:10,xp:14,gil:35,draw:"Fire",kind:"bug"},
+  cater:{name:"Caterchipillar",hp:155,atk:17,def:6,spd:7,xp:20,gil:45,draw:"Cure",kind:"cater"},
+  grendel:{name:"Grendel",hp:215,atk:22,def:8,spd:12,xp:34,gil:70,draw:"Thunder",kind:"beast"},
+  bomb:{name:"Bomb",hp:125,atk:21,def:4,spd:11,xp:22,gil:50,draw:"Fira",kind:"bomb"},
+  redbat:{name:"Red Bat",hp:105,atk:18,def:3,spd:20,xp:18,gil:40,draw:"Thunder",kind:"bat"},
+  buel:{name:"Buel",hp:175,atk:20,def:6,spd:13,xp:26,gil:55,draw:"Fira",kind:"eye"},
+  ifrit:{name:"IFRIT",hp:1000,atk:27,def:10,spd:13,xp:300,gil:800,draw:"Fira",kind:"ifrit",boss:true},
+  blackwidow:{name:"X-ATM092 · BLACK WIDOW",hp:1550,atk:31,def:12,spd:15,xp:500,gil:1200,draw:"Thunder",kind:"mech",boss:true}
+};
+var SPELLS={ Fire:{pow:55,foe:true}, Thunder:{pow:62,foe:true}, Fira:{pow:125,foe:true}, Cure:{pow:170,foe:false} };
+var GF_DEFS={ Quezacotl:{pow:165,el:"⚡"}, Shiva:{pow:155,el:"❄"}, Ifrit:{pow:235,el:"🔥"} };
+var B={ active:false, foes:[], phase:"", actor:0, orders:[], onWin:null, kind:null, floaters:[], gfFx:0, gfName:"", sel:0, pending:null, zone:"field" };
+
+function battleSay(txt){ $("dlgName").textContent="⚔ BATTLE"; $("dlgText").textContent=txt; }
+function battleChoices(list){
+  var box=$("dlgChoices"); box.innerHTML=""; box.style.display="flex"; B.sel=0; B.currentList=list;
+  list.forEach(function(it,idx){
+    var b=document.createElement("button"); b.type="button";
+    b.textContent=(idx+1)+". "+it.label+(it.note?"  ·  "+it.note:"");
+    if(it.disabled) b.disabled=true;
+    b.addEventListener("click",function(ev){ ev.stopPropagation(); if(!it.disabled){ AudioSys.accept(); it.fn(); } });
+    box.appendChild(b);
+  });
+  $("dlgHint").style.display="none";
+}
+function battleKey(k){
+  if(k==="Escape"||k==="x"||k==="X"){ battleCancel(); return; }
+  if(B.phase==="exec"||B.phase==="done") return;
+  var n=parseInt(k,10);
+  if(!isNaN(n)&&B.currentList&&B.currentList[n-1]&&!B.currentList[n-1].disabled){
+    AudioSys.accept();
+    try{ B.currentList[n-1].fn(); }catch(err){ B.phase="command"; commandPhase(); }
+  }
+}
+function battleConfirm(){ if(B.currentList&&B.currentList[0]&&!B.currentList[0].disabled){ AudioSys.accept(); B.currentList[0].fn(); } }
+function battleCancel(){
+  if(B.phase==="target"||B.phase==="sub"){ B.phase="command"; commandPhase(); }
+  else if(B.phase==="command"&&B.actor>0){ B.actor--; B.orders.pop(); commandPhase(); }
+}
+function startBattle(types,kind,onWin){
+  G.mode="battle"; B.active=true; B.kind=kind||null; B.onWin=onWin||null;
+  B.zone = G.map==="cavern" ? "cave" : "field";
+  B.foes=types.map(function(t,i){
+    var d=ENEMIES[t];
+    return { type:t, name:d.name, hp:d.hp, maxhp:d.hp, atk:d.atk, def:d.def, spd:d.spd, xp:d.xp, gil:d.gil, draw:d.draw, kind:d.kind, boss:!!d.boss, alive:true, x:[86,196,300][i]||150, y:[120,86,140][i]||110, flash:0 };
+  });
+  B.orders=[]; B.actor=0; B.floaters=[];
+  party.forEach(function(m){ m.defending=false; });
+  AudioSys.gf();
+  battleSay(B.foes.map(function(f){ return f.name; }).join(" and ")+" appeared!");
+  logEvent("Battle: <b>"+B.foes.map(function(f){ return f.name; }).join(", ")+"</b>");
+  setTimeout(commandPhase,700);
+}
+function currentActor(){
+  while(B.actor<party.length && !party[B.actor].alive) B.actor++;
+  return party[B.actor];
+}
+function commandPhase(){
+  if(!B.active) return;
+  var m=currentActor();
+  if(!m){ execRound(); return; }
+  B.phase="command";
+  battleSay(m.name+", choose a command.  (Keys 1–7 work too.)");
+  var list=[];
+  var low=m.hp<=m.maxhp*0.25;
+  list.push({label: low? "LIMIT BREAK!":"Attack", note: low? m.name==="Squall"?"Renzokuken":(m.name==="Zell"?"Duel Rush":"Slot: Full-Cure") : m.weapon,
+    fn:function(){ pickTarget({type:"attack",limit:low}); }});
+  list.push({label:"Magic", note:"spend drawn stock", fn:function(){ magicMenu(); }});
+  list.push({label:"Draw", note:"steal spell stock", fn:function(){ pickTarget({type:"draw"}); }});
+  list.push({label:"GF", note:"summon Guardian Force", disabled:!G.flags.gotGF, fn:function(){ gfMenu(); }});
+  list.push({label:"Item", fn:function(){ itemMenu(); }});
+  list.push({label:"Defend", note:"halve damage", fn:function(){ B.orders.push({actor:m,act:{type:"defend"}}); B.actor++; commandPhase(); }});
+  if(!B.kind) list.push({label:"Run", note:"bosses can't be fled", fn:function(){ tryRun(m); }});
+  battleChoices(list);
+}
+function magicMenu(){
+  var m=currentActor(); B.phase="sub";
+  var list=Object.keys(SPELLS).filter(function(s){ return G.stock[s]>0; }).map(function(s){
+    return { label:s, note:"× "+G.stock[s]+(SPELLS[s].foe?" · damage":" · heal"), fn:function(){
+      if(SPELLS[s].foe) pickTarget({type:"magic",spell:s});
+      else pickAlly({type:"magic",spell:s});
+    }};
+  });
+  if(!list.length) list.push({label:"No spells stocked — Draw some!", disabled:true, fn:function(){}});
+  list.push({label:"◀ Back", fn:function(){ B.phase="command"; commandPhase(); }});
+  battleSay(m.name+" — cast which spell?");
+  battleChoices(list);
+}
+function gfMenu(){
+  var m=currentActor(); B.phase="sub";
+  var names=["Quezacotl","Shiva"]; if(G.flags.ifrit) names.push("Ifrit");
+  var list=names.map(function(g){
+    return { label:g+" "+GF_DEFS[g].el, note:"all enemies · power "+GF_DEFS[g].pow, fn:function(){
+      B.orders.push({actor:m,act:{type:"gf",gf:g}}); B.actor++; commandPhase();
+    }};
+  });
+  list.push({label:"◀ Back", fn:function(){ B.phase="command"; commandPhase(); }});
+  battleSay(m.name+" — summon which Guardian Force?");
+  battleChoices(list);
+}
+function itemMenu(){
+  var m=currentActor(); B.phase="sub";
+  var list=Object.keys(G.items).filter(function(k){ return G.items[k]>0; }).map(function(k){
+    return { label:k, note:"× "+G.items[k], fn:function(){
+      if(k==="Phoenix Down") pickAlly({type:"item",item:k},true);
+      else pickAlly({type:"item",item:k},false);
+    }};
+  });
+  if(!list.length) list.push({label:"Bag is empty", disabled:true, fn:function(){}});
+  list.push({label:"◀ Back", fn:function(){ B.phase="command"; commandPhase(); }});
+  battleSay(m.name+" — use which item?");
+  battleChoices(list);
+}
+function pickTarget(act){
+  var m=currentActor(); B.phase="target"; B.pending=act;
+  var list=B.foes.filter(function(f){ return f.alive; }).map(function(f,i){
+    return { label:f.name, note:"HP "+Math.max(0,f.hp)+"/"+f.maxhp+(act.type==="draw"?" · draws "+f.draw:""), fn:function(){
+      act.target=f; B.orders.push({actor:m,act:act}); B.actor++; commandPhase();
+    }};
+  });
+  list.push({label:"◀ Back", fn:function(){ B.phase="command"; commandPhase(); }});
+  battleSay(m.name+" — target?");
+  battleChoices(list);
+}
+function pickAlly(act,needKO){
+  var m=currentActor(); B.phase="target"; B.pending=act;
+  var list=party.map(function(p){
+    return { label:p.name, note:"HP "+Math.max(0,p.hp)+"/"+p.maxhp+(p.alive?"":" · KO"), disabled: needKO? p.alive : !p.alive, fn:function(){
+      act.target=p; B.orders.push({actor:m,act:act}); B.actor++; commandPhase();
+    }};
+  });
+  list.push({label:"◀ Back", fn:function(){ B.phase="command"; commandPhase(); }});
+  battleSay(m.name+" — on whom?");
+  battleChoices(list);
+}
+function tryRun(m){
+  if(Math.random()<0.72){
+    B.phase="done"; G.fled++; G.score=Math.max(0,G.score-5);
+    battleSay("Got away safely… (Exam marks: -5. Quistis felt that.)");
+    AudioSys.cancel();
+    setTimeout(function(){ endBattle(false); },900);
+  } else {
+    battleSay("Couldn't escape!");
+    B.orders.push({actor:m,act:{type:"wait"}}); B.actor++;
+    setTimeout(commandPhase,700);
+  }
+}
+function floater(x,y,text,color){ B.floaters.push({x:x,y:y,text:text,color:color,t:50}); }
+function physDmg(atk,def){ return Math.max(5, Math.round(atk*3 + rnd(-8,14) - def*2)); }
+function execRound(){
+  B.phase="exec"; $("dlgChoices").style.display="none";
+  var queue=B.orders.map(function(o){ return {side:"p",o:o,spd:o.actor.spd+rnd(0,4)}; });
+  B.foes.filter(function(f){ return f.alive; }).forEach(function(f){ queue.push({side:"e",foe:f,spd:f.spd+rnd(0,4)}); });
+  queue.sort(function(a,b){ return b.spd-a.spd; });
+  var step=0;
+  function next(){
+    try{ nextStep(); }catch(err){ window.__battleErr=String(err&&err.message); B.orders=[]; B.actor=0; if(B.active && aliveParty().length && B.foes.some(function(f){ return f.alive; })) commandPhase(); }
+  }
+  function nextStep(){
+    if(!B.active) return;
+    if(!aliveParty().length){ loseBattle(); return; }
+    if(!B.foes.some(function(f){ return f.alive; })){ winBattle(); return; }
+    if(step>=queue.length){
+      B.orders=[]; B.actor=0;
+      party.forEach(function(m){ m.defending=false; });
+      commandPhase(); return;
+    }
+    var q=queue[step++];
+    if(q.side==="p"){
+      var m=q.o.actor, act=q.o.act;
+      if(!m.alive){ next(); return; }
+      if(act.type==="defend"){ m.defending=true; battleSay(m.name+" is defending."); setTimeout(next,550); return; }
+      if(act.type==="wait"){ setTimeout(next,300); return; }
+      if(act.type==="attack"){
+        var f=act.target; if(!f.alive) f=B.foes.find(function(x){ return x.alive; });
+        if(!f){ next(); return; }
+        if(act.limit){ limitAttack(m,f,next); return; }
+        var d=physDmg(partyAtk(m),f.def); f.hp-=d; f.flash=8; AudioSys.hit();
+        floater(f.x,f.y-14,d,"#fff");
+        battleSay(m.name+" attacks "+f.name+" — "+d+" damage!");
+        if(f.hp<=0){ f.alive=false; battleSay(f.name+" was defeated!"); }
+        setTimeout(next,750); return;
+      }
+      if(act.type==="draw"){
+        var f2=act.target; if(!f2||!f2.alive){ setTimeout(next,300); return; }
+        var amt=rnd(3,6); G.stock[f2.draw]=(G.stock[f2.draw]||0)+amt;
+        AudioSys.magic(); floater(f2.x,f2.y-14,"DRAW "+f2.draw+" ×"+amt,"#7ee0ff");
+        battleSay(m.name+" drew "+amt+" × "+f2.draw+" from "+f2.name+"!");
+        updateHUD(); setTimeout(next,750); return;
+      }
+      if(act.type==="magic"){
+        var s=act.spell; if(G.stock[s]<=0){ battleSay("No "+s+" stock left!"); setTimeout(next,500); return; }
+        G.stock[s]--; AudioSys.magic();
+        if(SPELLS[s].foe){
+          var f3=act.target; if(!f3.alive) f3=B.foes.find(function(x){ return x.alive; });
+          if(!f3){ updateHUD(); next(); return; }
+          var d2=Math.max(8, Math.round(SPELLS[s].pow + m.mag*2 + rnd(-6,10) - f3.def));
+          f3.hp-=d2; f3.flash=8; floater(f3.x,f3.y-14,d2,"#ffd94a");
+          battleSay(m.name+" casts "+s+" — "+d2+" damage to "+f3.name+"!");
+          if(f3.hp<=0){ f3.alive=false; }
+        } else {
+          var p=act.target; if(!p.alive) p=aliveParty()[0];
+          var h=SPELLS[s].pow + m.mag*2; p.hp=clamp(p.hp+h,0,p.maxhp);
+          AudioSys.heal(); floater(392,p===party[0]?60:(p===party[1]?150:240), "+"+h, "#7dff8a");
+          battleSay(m.name+" casts "+s+" — "+p.name+" recovers "+h+" HP!");
+        }
+        updateHUD(); setTimeout(next,800); return;
+      }
+      if(act.type==="gf"){
+        B.gfFx=55; B.gfName=act.gf; AudioSys.gf();
+        battleSay(m.name+" summons "+act.gf.toUpperCase()+"!!");
+        setTimeout(function(){
+          B.foes.forEach(function(f){ if(f.alive){ var d=Math.max(15, GF_DEFS[act.gf].pow + m.level*6 - f.def); f.hp-=d; f.flash=10; floater(f.x,f.y-14,d,"#ff9d5c"); if(f.hp<=0) f.alive=false; } });
+          AudioSys.hit(); updateHUD(); setTimeout(next,900);
+        },800); return;
+      }
+      if(act.type==="item"){
+        var it=act.item, p2=act.target; G.items[it]--;
+        if(it==="Potion"||it==="Hi-Potion"){ var h2= it==="Potion"?200:600; p2.hp=clamp(p2.hp+h2,0,p2.maxhp); AudioSys.heal(); battleSay(m.name+" uses "+it+" — "+p2.name+" +"+h2+" HP."); }
+        else if(it==="Phoenix Down"){ p2.alive=true; p2.hp=Math.floor(p2.maxhp*0.3); AudioSys.heal(); battleSay(p2.name+" is revived!"); }
+        else { battleSay(m.name+" uses "+it+". Refreshing!"); AudioSys.heal(); }
+        updateHUD(); setTimeout(next,750); return;
+      }
+      next(); return;
+    } else {
+      var foe=q.foe; if(!foe.alive){ next(); return; }
+      var targets=aliveParty(); if(!targets.length){ loseBattle(); return; }
+      var t=choice(targets);
+      var useMagic = foe.boss && Math.random()<0.35;
+      var d=physDmg(foe.atk,partyDef(t)); if(t.defending) d=Math.ceil(d/2);
+      t.hp-=d; AudioSys.hit();
+      floater(392, t===party[0]?60:(t===party[1]?150:240), d, "#ff7d7d");
+      battleSay(foe.name+(useMagic?" unleashes a special attack on ":" attacks ")+t.name+" — "+d+" damage!");
+      if(t.hp<=0){ t.hp=0; t.alive=false; battleSay(t.name+" is KO'd!"); }
+      updateHUD(); setTimeout(next,800); return;
+    }
+  }
+  next();
+}
+function limitAttack(m,f,done){
+  var hits = m.name==="Selphie" ? 1 : 4, i=0;
+  if(m.name==="Selphie"){
+    f.hp-=0; var healAll=180;
+    party.forEach(function(p){ if(p.alive) p.hp=clamp(p.hp+healAll,0,p.maxhp); });
+    AudioSys.heal(); battleSay("LIMIT — Selphie's Slot rolls FULL-CURE! Party +"+healAll+" HP!");
+    updateHUD(); setTimeout(done,900); return;
+  }
+  battleSay("LIMIT BREAK — "+(m.name==="Squall"?"RENZOKUKEN!":"DUEL RUSH!"));
+  (function hit(){
+    if(i>=hits||!f.alive){ if(f.hp<=0) f.alive=false; setTimeout(done,400); return; }
+    var d=Math.round(physDmg(partyAtk(m),f.def)*0.65); f.hp-=d; f.flash=6; AudioSys.hit();
+    floater(f.x+rnd(-14,14),f.y-14,d,"#ffd94a"); i++; setTimeout(hit,260);
+  })();
+}
+function gainXP(xp,gil){
+  G.gil+=gil;
+  party.forEach(function(m){
+    m.xp+=xp;
+    var newLv=5+Math.floor(m.xp/90);
+    while(m.level<newLv){ m.level++; m.maxhp+=30; m.atk+=3; m.def+=2; m.mag+=2; m.hp=clamp(m.hp+30,0,m.maxhp); logEvent("<b>"+m.name+"</b> reached Lv "+m.level+"!"); }
+    if(!m.alive){ m.alive=true; m.hp=1; }
+  });
+}
+function winBattle(){
+  B.phase="done";
+  var xp=B.foes.reduce(function(s,f){ return s+f.xp; },0);
+  var gil=B.foes.reduce(function(s,f){ return s+f.gil; },0);
+  gainXP(xp,gil); G.battlesWon++;
+  AudioSys.victory();
+  battleSay("Victory! Party gained "+xp+" XP and "+gil+" gil.");
+  $("dlgChoices").style.display="none";
+  logEvent("Won battle: <b>+"+xp+" XP, +"+gil+" gil</b>");
+  updateHUD();
+  var cb=B.onWin;
+  setTimeout(function(){ endBattle(true); if(cb) cb(); },1400);
+}
+function loseBattle(){
+  B.phase="done"; AudioSys.defeat();
+  battleSay("The party has fallen…");
+  setTimeout(function(){
+    B.active=false; G.mode="explore";
+    party.forEach(function(m){ m.alive=true; m.hp=Math.floor(m.maxhp*0.5); });
+    var lost=Math.floor(G.gil*0.1); G.gil-=lost;
+    G.map="garden"; G.px=7; G.py=8;
+    showBanner("YOU WOKE UP IN THE INFIRMARY","Dr. Kadowaki shakes her head. “The exam isn't over, Squall. Rest, restock in Balamb Town, and try again.”  (Lost "+lost+" gil to the infirmary vending machine.)","BACK TO CLASS",null);
+    updateHUD();
+  },1300);
+}
+function endBattle(won){
+  B.active=false; B.foes=[]; B.orders=[];
+  if(G.mode==="battle") G.mode="explore";
+  $("dlgName").textContent=""; $("dlgText").textContent="…";
+  $("dlgChoices").style.display="none"; $("dlgHint").style.display="block";
+  updateHUD();
+}
+function startIfrit(){
+  if(!G.flags.cavePermit){
+    say([{who:"???",text:"Heat rolls out of the north chamber in waves. Something ancient is watching — but Garden rules are clear: check in with the faculty member at the entrance first."}]);
+    return;
+  }
+  say([
+    {who:"IFRIT",text:"WHO DARES WARM THEMSELVES AT MY FIRE, LITTLE HUMANS?"},
+    {who:"SELPHIE",text:"Hi!! Big fan! Love the horns! We're here for a school exam, please don't eat us!"},
+    {who:"IFRIT",text:"AN… EXAM. THE GARDEN SENDS CHILDREN WITH STICKS, AS IT DID A HUNDRED YEARS AGO."},
+    {choice:[
+      {label:"“We're SeeD candidates. Fight us properly.”", lines:[{who:"IFRIT",text:"HA! PROPERLY. VERY WELL — I SHALL GRADE YOU IN FIRE."}]},
+      {label:"“We seek your strength, Ifrit.”", lines:[{who:"IFRIT",text:"THEN TAKE IT — IF YOUR HANDS DON'T BURN."}]},
+      {label:"Draw your gunblade. Say nothing.", lines:[{who:"IFRIT",text:"THE QUIET ONE. GOOD. WORDS MELT. STEEL MUST SPEAK."}]}
+    ]},
+    {who:"ZELL",text:"Win or lose, nobody tells Seifer we screamed. NOBODY."}
+  ],function(){ startBattle(["ifrit"],"boss",ifritVictory); });
+}
+function ifritVictory(){
+  G.flags.ifrit=true;
+  say([
+    {who:"IFRIT",text:"ENOUGH. …ENOUGH! HA HA HA! IT HAS BEEN AGES SINCE MORTALS MADE ME SWEAT."},
+    {who:"IFRIT",text:"TAKE MY FIRE, CANDIDATES. JUNCTION IT WELL — AND WHEN THE SORCERESS'S SHADOW FALLS, REMEMBER: EVEN FIRE CAN CHOOSE WHAT IT BURNS FOR."},
+    {who:"SYSTEM",text:"GF IFRIT joined you!\nHell Fire is now available in the GF command."},
+    {who:"SELPHIE",text:"WE PASSED! WE PASSED THE EXAM! …Do you think they serve cake at graduations? Asking for me. It's me. I want cake."},
+    {who:"SQUALL",text:"(Exam cleared. Now — back across the plains to Garden.)"}
+  ],function(){
+    logEvent("<b>GF Ifrit</b> obtained — exam cleared!");
+    healParty(false); updateHUD();
+  });
+}
+function widowVictory(){
+  G.flags.ended=true;
+  var rank = G.score>=90 ? "S" : (G.score>=75 ? "A" : (G.score>=55 ? "B" : "C"));
+  say([
+    {who:"SELPHIE",text:"IT'S DOWN! IT'S DOWN! Somebody count the legs, I want a souvenir leg!"},
+    {who:"ZELL",text:"We just beat a Galbadian war machine with school supplies. SCHOOL. SUPPLIES."},
+    {who:"QUISTIS (radio)",text:"Squall?! The Garden sensors just lit up like a festival — report in! …You're all alive? Then get home. Graduation's in an hour, heroes."},
+    {who:"SQUALL",text:"(…Whatever comes next — sorceress, war, whatever — we'll face it the same way. Together. …Did I say that out loud?)"}
+  ],function(){
+    showBanner("★ SEED EXAM: COMPLETE ★",
+      "Battles won: "+G.battlesWon+" · Steps walked: "+G.steps+" · Exam conduct score: "+G.score+"/100\nFINAL SEED RANK: "+rank+"\n\nSquall, Zell and Selphie graduate as SeeD. Balamb Garden celebrates — there is, in fact, cake. Somewhere out at sea, something ancient dreams on… but that's another game.",
+      "THE END — KEEP EXPLORING",null);
+    logEvent("Graduated as <b>SeeD</b> — Rank "+rank+"!");
+    updateHUD();
+  });
+}
+/* wire widow onWin: patch startBattle calls — ambush passes kind only, so hook here */
+var _origStart=startBattle;
+
+/* ---------- banner ---------- */
+var bannerCb=null;
+function showBanner(title,text,btn,cb){
+  $("bannerTitle").textContent=title; $("bannerText").innerText=text;
+  $("btnBanner").textContent=btn||"CONTINUE"; bannerCb=cb||null;
+  $("bannerBox").style.display="block";
+}
+$("btnBanner").addEventListener("click",function(){
+  AudioSys.accept(); $("bannerBox").style.display="none";
+  var cb=bannerCb; bannerCb=null; if(cb) cb();
+});
+
+/* ---------- battle scene drawing ---------- */
+function drawEnemyShape(f){
+  var x=f.x, y=f.y, fl=f.flash>0;
+  if(f.flash>0) f.flash--;
+  var main=fl?"#ffffff":null;
+  function C(c){ return main||c; }
+  if(f.kind==="bug"){ px(x-22,y+6,44,20,C("#7a4a9e")); px(x-16,y-2,14,12,C("#9e6ac2")); px(x+8,y+16,4,12,"#3a2450"); px(x-14,y+16,4,12,"#3a2450"); px(x-4,y+2,5,5,"#ffd94a"); }
+  else if(f.kind==="cater"){ px(x-26,y+8,52,18,C("#4a9e4a")); px(x-26,y+2,16,14,C("#6ac26a")); px(x-20,y+4,4,4,"#14141f"); px(x+18,y+24,8,6,"#2c6e2c"); px(x-4,y+24,8,6,"#2c6e2c"); }
+  else if(f.kind==="beast"){ px(x-24,y-6,48,36,C("#8a5a2a")); px(x-30,y-12,12,10,C("#e8c33a")); px(x+18,y-12,12,10,C("#e8c33a")); px(x-8,y+2,5,5,"#ff5252"); px(x+6,y+2,5,5,"#ff5252"); px(x-14,y+30,10,8,"#5a3a1a"); px(x+6,y+30,10,8,"#5a3a1a"); }
+  else if(f.kind==="bomb"){ var p=1+0.06*Math.sin(Date.now()/150); px(x-18,y-2,36,34,C("#c23a0c")); px(x-12,y+6,10,10,C("#ff7a1e")); px(x+4,y+14,8,8,C("#ffb04a")); px(x-3,y-14,6,12,"#ffd94a"); px(x-8,y-4,5,5,"#14141f"); px(x+5,y-4,5,5,"#14141f"); }
+  else if(f.kind==="bat"){ px(x-26,y+2,18,10,C("#7a2438")); px(x+8,y+2,18,10,C("#7a2438")); px(x-10,y,20,18,C("#a83a52")); px(x-4,y+4,4,4,"#ffd94a"); px(x+3,y+4,4,4,"#ffd94a"); px(x-2,y+10,6,3,"#fff"); }
+  else if(f.kind==="eye"){ px(x-16,y-4,32,28,C("#3a6ea8")); px(x-8,y+2,16,16,"#dff6ff"); px(x-3,y+7,6,6,"#14141f"); px(x-20,y+18,10,6,C("#2c5280")); px(x+10,y+18,10,6,C("#2c5280")); }
+  else if(f.kind==="ifrit"){ px(x-30,y+16,60,44,C("#a82c10")); px(x-22,y-6,44,30,C("#c23a0c")); px(x-34,y-22,14,22,C("#e8c33a")); px(x+20,y-22,14,22,C("#e8c33a")); px(x-12,y+4,7,7,"#ffd94a"); px(x+6,y+4,7,7,"#ffd94a"); px(x-8,y+16,16,4,"#fff"); px(x-26,y+52,14,10,"#7a1e0c"); px(x+12,y+52,14,10,"#7a1e0c"); px(x-4,y+60,10,8,"#ff7a1e"); }
+  else if(f.kind==="mech"){ px(x-44,y+6,88,30,C("#4a4f63")); px(x-30,y-8,60,18,C("#626880")); px(x-6,y-2,12,8,"#ff5252"); px(x-50,y+30,10,26,"#333747"); px(x-24,y+34,8,26,"#333747"); px(x+16,y+34,8,26,"#333747"); px(x+40,y+30,10,26,"#333747"); px(x-52,y+54,16,5,"#22242f"); px(x+36,y+54,16,5,"#22242f"); }
+  /* name + hp */
+  ctx.fillStyle="rgba(0,0,0,.6)"; ctx.fillRect(x-34,y-30,68,12);
+  ctx.fillStyle="#fff"; ctx.font="9px monospace"; ctx.textAlign="center";
+  ctx.fillText(f.name.length>16? f.name.slice(0,16):f.name, x, y-21);
+  ctx.fillStyle="#401010"; ctx.fillRect(x-26,y+66,52,5);
+  ctx.fillStyle="#ff5252"; ctx.fillRect(x-26,y+66,Math.max(0,52*f.hp/f.maxhp),5);
+  ctx.textAlign="left";
+}
+function drawBattle(){
+  var cave=B.zone==="cave";
+  var g=ctx.createLinearGradient(0,0,0,352);
+  if(cave){ g.addColorStop(0,"#2a0803"); g.addColorStop(0.7,"#571f0d"); g.addColorStop(1,"#38120c"); }
+  else { g.addColorStop(0,"#7ec8f7"); g.addColorStop(0.7,"#4a9e57"); g.addColorStop(1,"#2c6e35"); }
+  ctx.fillStyle=g; ctx.fillRect(0,0,480,352);
+  if(!cave){ px(30,26,54,16,"#fff"); px(380,16,64,18,"#fff"); px(180,40,40,12,"#fff"); }
+  else { px(0,300,480,52,"#c22e0c"); px(20,318,70,14,"#ff7a1e"); px(360,308,90,16,"#ff7a1e"); px(180,326,60,12,"#ffb04a"); }
+  ctx.fillStyle=cave?"rgba(0,0,0,.25)":"rgba(0,60,0,.25)";
+  ctx.beginPath(); ctx.ellipse(240,300,230,42,0,0,Math.PI*2); ctx.fill();
+  if(B.gfFx>0){
+    B.gfFx--;
+    ctx.fillStyle = B.gfName==="Shiva" ? "rgba(126,224,255,.45)" : (B.gfName==="Ifrit" ? "rgba(255,90,20,.45)" : "rgba(255,217,74,.4)");
+    ctx.fillRect(0,0,480,352);
+    ctx.fillStyle="#fff"; ctx.font="bold 26px monospace"; ctx.textAlign="center";
+    ctx.fillText(B.gfName.toUpperCase()+"!",240,80); ctx.textAlign="left";
+    px(200,120,80,80, B.gfName==="Shiva"?"#7ee0ff":(B.gfName==="Ifrit"?"#ff5a1e":"#ffd94a"));
+    px(216,136,48,48,"#fff");
+  }
+  B.foes.forEach(function(f){ if(f.alive) drawEnemyShape(f); });
+  party.forEach(function(m,i){
+    var y=64+i*92;
+    if(m.alive){ drawChibi(404,y,m.pal,"left",0); if(m.defending){ px(400,y-6,36,3,"#7ee0ff"); } }
+    else { px(408,y+22,28,8,"#555"); }
+    ctx.fillStyle="rgba(0,0,0,.6)"; ctx.fillRect(388,y+34,64,20);
+    ctx.fillStyle="#fff"; ctx.font="9px monospace"; ctx.fillText(m.name,392,y+43);
+    ctx.fillStyle= m.hp<=m.maxhp*0.25 ? "#ff5252" : "#7dff8a"; ctx.fillText(Math.max(0,m.hp)+"/"+m.maxhp,392,y+52);
+  });
+  B.floaters=B.floaters.filter(function(f){ return f.t>0; });
+  B.floaters.forEach(function(f){ f.t--; f.y-=0.7; ctx.fillStyle=f.color; ctx.font="bold 15px monospace"; ctx.textAlign="center"; ctx.fillText(f.text,f.x,f.y); ctx.textAlign="left"; });
+}
+
+/* ambush battle must end with the widow ending: wrap onWin by watching flags */
+setInterval(function(){
+  if(B.active && B.kind==="boss" && B.foes.length && B.foes[0].type==="blackwidow" && !B.onWin){ B.onWin=widowVictory; }
+},300);
+
+/* ---------- init ---------- */
+updateHUD();
+logEvent("Morning of the <b>SeeD field exam</b>.");
+$("dlgText").textContent="Balamb Garden, morning of the field exam. Instructor Quistis waits by the blackboard at the top of the classroom — walk into her to talk, and check the glowing terminal on the west wall when she tells you to.";
+requestAnimationFrame(render);
+setInterval(function(){ animFrame++; },420);
+</script>
+</body>
+</html>
